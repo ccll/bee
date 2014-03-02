@@ -50,11 +50,13 @@ func pathExists(path string) bool {
 var started = make(chan bool)
 
 func testApp(cmd *Command, args []string) {
-	if len(args) != 1 {
+	if len(args) < 1 {
 		ColorLog("[ERRO] Cannot start running[ %s ]\n",
 			"argument 'appname' is missing")
 		os.Exit(2)
 	}
+	restArgs := args[1:]
+
 	crupath, _ := os.Getwd()
 	Debugf("current path:%s\n", crupath)
 
@@ -77,14 +79,14 @@ func testApp(cmd *Command, args []string) {
 	for {
 		select {
 		case <-started:
-			runTest()
+			runTest(restArgs)
 			//Kill()
 			//os.Exit(0)
 		}
 	}
 }
 
-func runTest() {
+func runTest(args []string) {
 	ColorLog("[INFO] Start testing...\n")
 	time.Sleep(time.Second * 1)
 	crupwd, _ := os.Getwd()
@@ -93,8 +95,10 @@ func runTest() {
 		os.Chdir(testDir)
 	}
 
+	fullargs := append([]string{"test"}, args...)
+
 	var err error
-	icmd := exec.Command("go", "test")
+	icmd := exec.Command("go", fullargs...)
 	icmd.Stdout = os.Stdout
 	icmd.Stderr = os.Stderr
 	ColorLog("[TRAC] ============== Test Begin ===================\n")
